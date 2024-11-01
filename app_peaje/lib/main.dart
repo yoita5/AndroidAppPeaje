@@ -6,7 +6,7 @@ import 'package:app_peaje/home_screen.dart' as home_screen;
 import 'package:flutter_svg/flutter_svg.dart'; // Importar flutter_svg
 
 void main() {
-  runApp(const MyApp()); // este es el main
+  runApp(const MyApp()); // este es el main.
 }
 
 class MyApp extends StatelessWidget {
