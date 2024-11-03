@@ -1,15 +1,16 @@
-import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
 import 'package:app_peaje/profile_screen.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
-
+import 'package:app_peaje/user.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
+import 'package:app_peaje/VehicleListScreen.dart';
+import 'paymentmethodscreen.dart';
 class MainHomeScreen extends StatefulWidget {
-  const MainHomeScreen({super.key});
+  final User user;
+
+  const MainHomeScreen({super.key, required this.user});
 
   @override
-  _MainHomeScreenState createState() => _MainHomeScreenState();
+  State<MainHomeScreen> createState() => _MainHomeScreenState();
 }
 
 class _MainHomeScreenState extends State<MainHomeScreen> {
@@ -19,54 +20,35 @@ class _MainHomeScreenState extends State<MainHomeScreen> {
   bool _isRechargeButtonPressed = false;
   bool _isVehiclesButtonPressed = false;
   bool _isScanQrButtonPressed = false;
+  bool _isAddPaymentMethodButtonPressed = false;
+  bool _isAddVehicleButtonPressed = false;
 
-  final String _username = 'Juan Pérez';
-  double _balance = 1847.56;
-  String _qrImageUrl = '';
-  List<Vehicle> _registeredVehicles = [];
-  double? _rechargeAmount;
+  static const double _minRechargeAmount = 5.0;
+  static const String _qrCodeApiBaseUrl = 'https://api.qrserver.com/v1/create-qr-code/';
+  static const Color _qrCodeBorderColor = Color(0xFFff6666);
 
-  bool _hasRegisteredVehicles() {
-    return _registeredVehicles.isNotEmpty;
-  }
-
-  void _addNewVehicle() {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => AddVehicleScreen(
-          onVehicleAdded: (vehicle) {
-            setState(() {
-              _registeredVehicles.add(vehicle);
-            });
-          },
-        ),
-      ),
-    );
-  }
+  String _qrImageUrl = ''; // Variable to store the QR code image URL
 
   void _toggleUserButtonState() {
-  setState(() {
-    _isUserButtonPressed = true;
-  });
-  Navigator.push(
-    context,
-    MaterialPageRoute(builder: (context) => const ProfileScreen()),
-  ).then((_) {
     setState(() {
-      _isUserButtonPressed = false;
+      _isUserButtonPressed = true;
     });
-  });
-}
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => ProfileScreen(user: widget.user)),
+    ).then((_) {
+      setState(() {
+        _isUserButtonPressed = false;
+      });
+    });
+  }
 
   void _toggleHistoryButtonState() {
     setState(() {
       _isHistoryButtonPressed = true;
     });
-    Future.delayed(const Duration(milliseconds: 500), () {
-      setState(() {
-        _isHistoryButtonPressed = false;
-      });
+    setState(() {
+      _isHistoryButtonPressed = false;
     });
   }
 
@@ -74,23 +56,22 @@ class _MainHomeScreenState extends State<MainHomeScreen> {
     setState(() {
       _isQrButtonPressed = true;
     });
-    String uniqueQrData = 'usuario:$_username';
+    String uniqueQrData = 'usuario:${widget.user.name}';
+    
     String qrCodeImageUrl = await _generateQrCodeImage(uniqueQrData);
+    
     setState(() {
       _qrImageUrl = qrCodeImageUrl;
     });
-    Future.delayed(const Duration(milliseconds: 500), () {
-      setState(() {
-        _isQrButtonPressed = false;
-      });
+    setState(() {
+      _isQrButtonPressed = false;
     });
 
     _showQrDialog();
   }
 
   Future<String> _generateQrCodeImage(String data) async {
-    final String qrCodeApiUrl = 'https://api.qrserver.com/v1/create-qr-code/?data=$data&size=200x200';
-    return qrCodeApiUrl;
+    return '$_qrCodeApiBaseUrl?data=$data&size=200x200';
   }
 
   void _showQrDialog() {
@@ -101,7 +82,7 @@ class _MainHomeScreenState extends State<MainHomeScreen> {
           title: const Text('Tu Código QR'),
           content: Column(
             mainAxisSize: MainAxisSize.min,
-            children: [
+            children: <Widget>[
               if (_qrImageUrl.isNotEmpty)
                 Image.network(
                   _qrImageUrl,
@@ -128,187 +109,300 @@ class _MainHomeScreenState extends State<MainHomeScreen> {
     );
   }
 
-  void _toggleRechargeButtonState() {
-    setState(() {
-      _isRechargeButtonPressed = true;
-    });
-    _showRechargeDialog();
-    Future.delayed(const Duration(milliseconds: 500), () {
-      setState(() {
-        _isRechargeButtonPressed = false;
-      });
-    });
+  void _toggleRechargeButtonState() async {
+  setState(() {
+    _isRechargeButtonPressed = true;
+  });
+
+  // Verifica si el usuario tiene al menos un método de pago
+  if (widget.user.getPaymentMethods().isEmpty) {
+    // Muestra un diálogo que indica que se requiere un método de pago
+    await _showAddPaymentMethodRequiredDialog();
+  } else {
+    await _showRechargeDialog();
   }
 
-bool _hasPaymentMethodRegistered = false; // Simularemos que el usuario no tiene un método de pago registrado
+  setState(() {
+    _isRechargeButtonPressed = false;
+  });
+}
+
+Future<void> _showAddPaymentMethodRequiredDialog() async {
+  await showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return AlertDialog(
+        title: const Text('Método de Pago Requerido'),
+        content: const Text('Para recargar saldo, primero debe agregar un método de pago.'),
+        actions: [
+          TextButton(
+            child: const Text('Cancelar'),
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+          ),
+          TextButton(
+            child: const Text('Agregar Método de Pago'),
+            onPressed: () {
+              Navigator.of(context).pop(); // Cierra el diálogo
+              _navigateToAddPaymentMethodScreen(); // Navega a la pantalla para agregar método de pago
+            },
+          ),
+        ],
+      );
+    },
+  );
+}
+
+void _navigateToAddPaymentMethodScreen() {
+  Navigator.push(
+    context,
+    MaterialPageRoute(builder: (context) => PaymentMethodScreen(user: widget.user)), // Navega a la pantalla para agregar método de pago
+  );
+}
 
 Future<void> _showRechargeDialog() async {
-  final amount = await showDialog<double>(
+  double rechargeAmount = 0.0;
+
+  await showDialog(
     context: context,
-    builder: (context) => AlertDialog(
-      title: const Text('Recargar Saldo'),
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          if (!_hasPaymentMethodRegistered)
-            const Text('Debes registrar un método de pago para poder recargar tu saldo.'),
-          if (_hasPaymentMethodRegistered)
-            TextField(
-              keyboardType: TextInputType.numberWithOptions(decimal: true),
-              decoration: const InputDecoration(
-                hintText: 'Ingresa el monto a recargar',
-              ),
+    builder: (BuildContext context) {
+      return AlertDialog(
+        title: const Text('Recargar Saldo'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text('Ingrese el monto a recargar:'),
+            const SizedBox(height: 16),
+            TextFormField(
+              keyboardType: TextInputType.number,
               onChanged: (value) {
-                // Validar y parsear el valor ingresado
-                try {
-                  _rechargeAmount = double.parse(value);
-                } catch (e) {
-                  _rechargeAmount = null;
-                }
+                rechargeAmount = double.tryParse(value) ?? 0.0;
               },
+              decoration: InputDecoration(
+                hintText: 'Monto (mínimo \$$_minRechargeAmount)',
+                border: const OutlineInputBorder(),
+              ),
             ),
-        ],
-      ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.of(context).pop(),
-          child: const Text('Cancelar'),
+          ],
         ),
-        if (_hasPaymentMethodRegistered && _rechargeAmount != null && _rechargeAmount! >= 5.0)
-          ElevatedButton(
+        actions: [
+          TextButton(
+            child: const Text('Cancelar'),
             onPressed: () {
-              _rechargeBalance(_rechargeAmount!);
-              Navigator.of(context).pop(_rechargeAmount);
+              Navigator.of(context).pop();
             },
-            child: const Text('Recargar'),
           ),
-      ],
-    ),
+          TextButton(
+            child: const Text('Recargar'),
+            onPressed: () {
+              if (rechargeAmount >= _minRechargeAmount) {
+                setState(() {
+                  widget.user.balance += rechargeAmount; // Actualiza el saldo del usuario
+                });
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('Recarga de \$${rechargeAmount.toStringAsFixed(2)} realizada. Saldo actual: \$${widget.user.balance.toStringAsFixed(2)}')),
+                );
+                Navigator.of(context).pop();
+              } else {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('El monto mínimo de recarga es \$$_minRechargeAmount')),
+                );
+              }
+            },
+          ),
+        ],
+      );
+    },
   );
-
-  if (amount != null) {
-    // Actualizar el saldo del usuario
-    setState(() {
-      _balance += amount;
-    });
-  }
 }
 
-Future<void> _rechargeBalance(double amount) async {
-  try {
-    final response = await http.post(
-      Uri.parse('/api/recharge/'),
-      body: {'amount': amount.toString()},
-    );
+void _toggleVehiclesButtonState() {
+  setState(() {
+    _isVehiclesButtonPressed = true;
+  });
 
-    if (response.statusCode == 200) {
-      final newBalance = double.parse(jsonDecode(response.body)['new_balance']);
-      setState(() {
-        _balance = newBalance;
-      });
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Saldo recargado exitosamente. Nuevo saldo: \$${_balance.toStringAsFixed(2)}'),
+  if (widget.user.vehicles.isEmpty) {
+    _showAddVehicleDialog();
+  } else {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => VehicleListScreen(
+          vehicles: widget.user.vehicles,
+          onAddVehicle: (licensePlate, make) {
+            widget.user.addVehicle(licensePlate, make);
+            setState(() {}); // Actualiza el estado para reflejar el cambio
+          },
+          onRemoveVehicle: _onRemoveVehicle, // Pasa la función para eliminar vehículos
         ),
-      );
-    } else {
-      // Manejar el error de la solicitud
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Error al recargar el saldo. Inténtalo de nuevo.')),
-      );
-    }
-  } catch (e) {
-    // Manejar cualquier otro tipo de error
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Ocurrió un error. Inténtalo de nuevo más tarde.')),
+      ),
     );
   }
+
+  setState(() {
+    _isVehiclesButtonPressed = false;
+  });
 }
 
-  void _toggleVehiclesButtonState() {
-    setState(() {
-      _isVehiclesButtonPressed = true;
-    });
+void _onRemoveVehicle(String licensePlate) {
+  widget.user.removeVehicle(licensePlate); // Usa el método de la clase User
+  setState(() {}); // Actualiza la interfaz de usuario
+}
 
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('Vehículos'),
-          content: Column(
+void _showAddVehicleDialog() async {
+  setState(() {
+    _isAddVehicleButtonPressed = true;
+  });
+
+  String? licensePlate;
+  String? make;
+  List<String> makes = [
+    'Toyota', 'Honda', 'Ford', 'Chevrolet', 'Volkswagen', 'BMW', 'Mercedes-Benz',
+    'Audi', 'Nissan', 'Hyundai', 'Kia', 'Subaru', 'Mazda', 'Dodge', 'Chrysler',
+    'Jeep', 'Buick', 'GMC', 'Porsche', 'Lexus', 'Infinity', 'Land Rover', 'Jaguar',
+    'Fiat', 'Volvo', 'Mitsubishi', 'Tesla', 'Acura', 'Lincoln', 'Mini', 'Alfa Romeo',
+    'Ram', 'Genesis', 'Scion', 'Rover', 'Hummer', 'Smart', 'Peugeot', 'Renault',
+    'Citroën', 'Skoda', 'Seat', 'Opel', 'Saab', 'Lancia', 'Tata', 'Mahindra',
+    'Changan', 'Geely', 'BYD'
+  ];
+
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+
+  await showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return AlertDialog(
+        title: const Text('Agregar Vehículo'),
+        content: Form(
+          key: _formKey,
+          child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              if (_hasRegisteredVehicles())
-                const Text('Tus vehículos registrados:'),
-              if (_hasRegisteredVehicles())
-                Expanded(
-                  child: ListView.builder(
-                    itemCount: _registeredVehicles.length,
-                    itemBuilder: (context, index) {
-                      return ListTile(
-                        title: Text(_registeredVehicles[index].modelo),
-                        subtitle: Text(_registeredVehicles[index].placa),
-                      );
-                    },
-                  ),
+              const Text('Ingrese los detalles de su vehículo:'),
+              const SizedBox(height: 16),
+              TextFormField(
+                keyboardType: TextInputType.text,
+                onChanged: (value) {
+                  licensePlate = value.isNotEmpty ? value : null;
+                },
+                decoration: const InputDecoration(
+                  hintText: 'Placa',
+                  border: OutlineInputBorder(),
                 ),
-              if (!_hasRegisteredVehicles())
-                const Text('No tienes vehículos registrados.'),
-              const SizedBox(height: 20),
-              GestureDetector(
-                onTap: _addNewVehicle,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: const [
-                    Icon(Icons.add_circle_outline),
-                    SizedBox(width: 8),
-                    Text('Agregar Vehículo'),
-                  ],
+                validator: (value) {
+                  if (value != null && RegExp(r'^[a-zA-Z0-9]+$').hasMatch(value)) {
+                    return null;
+                  } else {
+                    return 'La placa debe contener solo letras y números.';
+                  }
+                },
+              ),
+              const SizedBox(height: 16),
+              DropdownButtonFormField<String>(
+                value: make,
+                onChanged: (value) {
+                  make = value;
+                },
+                items: makes.map((String item) {
+                  return DropdownMenuItem<String>(
+                    value: item,
+                    child: Text(item),
+                  );
+                }).toList(),
+                decoration: const InputDecoration(
+                  hintText: 'Marca',
+                  border: OutlineInputBorder(),
                 ),
+                validator: (value) {
+                  if (value == null) {
+                    return 'Seleccione una marca.';
+                  }
+                  return null;
+                },
               ),
             ],
           ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-                setState(() {
-                  _isVehiclesButtonPressed = false;
-                });
-              },
-              child: const Text('Cerrar'),
-            ),
-          ],
-        );
-      },
-    );
-  }
+        ),
+        actions: [
+          TextButton(
+            child: const Text('Cancelar'),
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+          ),
+          TextButton(
+            child: const Text('Guardar'),
+            onPressed: () {
+              if (_formKey.currentState?.validate() ?? false) {
+                if (licensePlate != null && make != null) {
+                  widget.user.addVehicle(licensePlate!, make!); // Agrega el vehículo
+                  Navigator.of(context).pop();
+                }
+              }
+            },
+          ),
+        ],
+      );
+    },
+  );
+
+  setState(() {
+    _isAddVehicleButtonPressed = false;
+  });
+}
 
   void _toggleScanQrButtonState() async {
     setState(() {
       _isScanQrButtonPressed = true;
     });
+
     try {
       String scannedData = await FlutterBarcodeScanner.scanBarcode(
-        "#ff6666",
-        "Cancelar",
+        _qrCodeBorderColor.value.toRadixString(16),
+        'Cancelar',
         true,
         ScanMode.QR,
       );
 
       if (scannedData != '-1') {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Escaneado: $scannedData')),
-        );
+        _processScannedQrCode(scannedData);
       }
-    } on PlatformException catch (e) {
+    } catch (e, stackTrace) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error al escanear: $e')),
+        SnackBar(content: Text('Error al escanear código QR: $e')),
       );
+      print('Error al escanear código QR: $e');
+      print('Stacktrace: $stackTrace');
     } finally {
       setState(() {
         _isScanQrButtonPressed = false;
       });
+    }
+  }
+
+  void _processScannedQrCode(String scannedData) {
+    List<String> parts = scannedData.split(':');
+    if (parts.length == 2 && parts[0] == 'usuario') {
+      String username = parts[1];
+      double chargeAmount = _minRechargeAmount; // Importe del cobro por peaje
+
+      if (widget.user.balance >= chargeAmount) {
+        setState(() {
+          widget.user.balance -= chargeAmount;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Cobro de \$$chargeAmount realizado. Saldo actual: \$${widget.user.balance.toStringAsFixed(2)}')),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('No hay saldo suficiente para realizar el cobro.')),
+        );
+      }
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Código QR inválido')),
+      );
     }
   }
 
@@ -403,7 +497,7 @@ Future<void> _rechargeBalance(double amount) async {
                                 ),
                                 const SizedBox(width: 8),
                                 Text(
-                                  _username,
+                                  widget.user.name,
                                   style: const TextStyle(
                                     color: Colors.white,
                                     fontSize: 16,
@@ -426,13 +520,21 @@ Future<void> _rechargeBalance(double amount) async {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      '\$${_balance.toStringAsFixed(2)}',
+                      '\$${widget.user.balance.toStringAsFixed(2)}',
                       style: const TextStyle(
                         color: Colors.white,
                         fontSize: 48,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
+                    if (widget.user.balance == 0.0)
+                      const Text(
+                        'No hay saldo disponible',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
+                        ),
+                      ),
                     const SizedBox(height: 40),
                     const Text(
                       'Asegúrate de mantener suficiente saldo para tus peajes.',
@@ -481,7 +583,7 @@ Future<void> _rechargeBalance(double amount) async {
                     ),
                     const Spacer(),
                     SizedBox(
-                      height: 50,
+                      height: 50, // Adjust height to match other buttons
                       child: _buildButton(
                         isPressed: _isScanQrButtonPressed,
                         text: 'Escanear QR',
@@ -496,100 +598,6 @@ Future<void> _rechargeBalance(double amount) async {
           ),
         );
       },
-    );
-  }
-}
-
-class Vehicle {
-  final String modelo;
-  final String placa;
-
-  Vehicle({required this.modelo, required this.placa});
-}
-
-class ProfileScreen extends StatelessWidget {
-  const ProfileScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Perfil'),
-      ),
-      body: const Center(
-        child: Text('Pantalla de Perfil'),
-      ),
-    );
-  }
-}
-
-class AddVehicleScreen extends StatefulWidget {
-  final void Function(Vehicle) onVehicleAdded;
-
-  const AddVehicleScreen({super.key, required this.onVehicleAdded});
-
-  @override
-  _AddVehicleScreenState createState() => _AddVehicleScreenState();
-}
-
-class _AddVehicleScreenState extends State<AddVehicleScreen> {
-  final TextEditingController _modelController = TextEditingController();
-  final TextEditingController _plateController = TextEditingController();
-
-  void _addVehicle() {
-    final modelo = _modelController.text.trim();
-    final placa = _plateController.text.trim();
-
-    if (modelo.isNotEmpty && placa.isNotEmpty) {
-      final newVehicle = Vehicle(modelo: modelo, placa: placa);
-      widget.onVehicleAdded(newVehicle);
-      Navigator.of(context).pop();
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Por favor, ingresa el modelo y la placa del vehículo.')),
-      );
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Agregar Vehículo'),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'Ingresa los detalles del vehículo:',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 16),
-            TextField(
-              controller: _modelController,
-              decoration: const InputDecoration(
-                labelText: 'Marca',
-                border: OutlineInputBorder(),
-              ),
-            ),
-            const SizedBox(height: 16),
-            TextField(
-              controller: _plateController,
-              decoration: const InputDecoration(
-                labelText: 'Placa',
-                border: OutlineInputBorder(),
-              ),
-            ),
-            const SizedBox(height: 24),
-            ElevatedButton(
-              onPressed: _addVehicle,
-              child: const Text('Agregar Vehículo'),
-            ),
-          ],
-        ),
-      ),
     );
   }
 }

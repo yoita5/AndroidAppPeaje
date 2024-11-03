@@ -1,6 +1,7 @@
 import 'package:app_peaje/home_screen.dart';
-import 'package:app_peaje/login_page.dart'; // Asegúrate de tener la pantalla de inicio de sesión importada
-import 'package:app_peaje/welcomeScreen.dart'; // Asegúrate de tener la pantalla de bienvenida importada
+import 'package:app_peaje/login_page.dart';
+import 'package:app_peaje/user.dart';
+import 'package:app_peaje/welcomeScreen.dart';
 import 'package:flutter/material.dart';
 
 class RegisterScreen extends StatefulWidget {
@@ -23,8 +24,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
   bool _isEmailValid = false;
   bool _isPasswordValid = false;
   bool _isConfirmPasswordValid = false;
-  bool _isPasswordVisible = false; // Para mostrar/ocultar la contraseña
-  bool _isConfirmPasswordVisible = false; // Para mostrar/ocultar la contraseña de confirmación
+  bool _isPasswordVisible = false;
+  bool _isConfirmPasswordVisible = false;
 
   bool _validateEmail(String email) {
     String emailPattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$';
@@ -33,7 +34,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   }
 
   bool _validatePhone(String phone) {
-    String phonePattern = r'^\+?[0-9]{10,15}$'; // Ajusta según el formato deseado
+    String phonePattern = r'^\+?[0-9]{10,15}$';
     RegExp regExp = RegExp(phonePattern);
     return regExp.hasMatch(phone);
   }
@@ -47,7 +48,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   void _handleSignUp() {
     setState(() {
-      _errorMessage = null; // Reiniciar el mensaje de error
+      _errorMessage = null;
       _isNameValid = _nameController.text.trim().isNotEmpty;
       _isPhoneValid = _validatePhone(_phoneController.text.trim());
       _isEmailValid = _validateEmail(_emailController.text.trim());
@@ -90,10 +91,15 @@ class _RegisterScreenState extends State<RegisterScreen> {
       return;
     }
 
-    // Si todas las validaciones son correctas, navegar a MainHomeScreen
+    // Si todas las validaciones son correctas, crear un objeto User y navegar a MainHomeScreen
+    User newUser = User(
+      name: _nameController.text.trim(),
+      email: _emailController.text.trim(),
+    );
+
     Navigator.pushReplacement(
       context,
-      MaterialPageRoute(builder: (context) => const MainHomeScreen()),
+      MaterialPageRoute(builder: (context) => MainHomeScreen(user: newUser)),
     );
   }
 
@@ -121,7 +127,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       onTap: () {
                         Navigator.pushReplacement(
                           context,
-                          MaterialPageRoute(builder: (context) => const WelcomeScreen()), // Regresar a la pantalla de bienvenida
+                          MaterialPageRoute(builder: (context) => const WelcomeScreen()),
                         );
                       },
                       child: const Icon(Icons.arrow_back, color: Colors.white, size: 30),
@@ -320,7 +326,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         onTap: () {
                           Navigator.pushReplacement(
                             context,
-                            MaterialPageRoute(builder: (context) => const LoginPage()), // Navegar a la pantalla de inicio de sesión
+                            MaterialPageRoute(builder: (context) => const LoginPage()),
                           );
                         },
                         child: const Align(

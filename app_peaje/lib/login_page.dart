@@ -3,6 +3,7 @@ import 'package:app_peaje/registerScreen.dart';
 import 'package:app_peaje/recover_password_screen.dart'; // Importa la pantalla de recuperación
 import 'package:app_peaje/welcomeScreen.dart';
 import 'package:flutter/material.dart';
+import 'package:app_peaje/user.dart'; // Importa la clase User
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -58,10 +59,13 @@ class _LoginPageState extends State<LoginPage> {
       return;
     }
 
+    // Crear un objeto de usuario después de un inicio de sesión exitoso
+    User user = User(name: 'Juan Pérez', email: email); // Cambia 'Juan Pérez' por el nombre real del usuario
+
     // Si las validaciones son correctas, navegar a la pantalla principal
     Navigator.pushReplacement(
       context,
-      MaterialPageRoute(builder: (context) => const MainHomeScreen()),
+      MaterialPageRoute(builder: (context) => MainHomeScreen(user: user)), // Pasar el usuario
     );
   }
 

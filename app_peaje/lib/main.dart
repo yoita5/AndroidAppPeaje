@@ -4,9 +4,10 @@ import 'package:app_peaje/registerScreen.dart';
 import 'package:app_peaje/welcomeScreen.dart';
 import 'package:app_peaje/home_screen.dart' as home_screen;
 import 'package:flutter_svg/flutter_svg.dart'; // Importar flutter_svg
+import 'package:app_peaje/user.dart';
 
 void main() {
-  runApp(const MyApp()); // este es el main.
+  runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
@@ -14,17 +15,21 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Crea un objeto User de ejemplo
+    final myUser = User(name: 'Juan Perez', email: 'juan.perez@example.com', balance: 1847.56,);
+
     return MaterialApp(
       title: 'App Peaje',
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      home: const WelcomeScreen(), // Set WelcomeScreen as the initial screen
+      initialRoute: '/',
       routes: {
+        '/': (context) => const WelcomeScreen(),
         '/login': (context) => const LoginPage(),
         '/register': (context) => const RegisterScreen(),
-        '/homepage': (context) => const home_screen.MainHomeScreen(),
+        '/homepage': (context) => home_screen.MainHomeScreen(user: myUser),
       },
     );
   }

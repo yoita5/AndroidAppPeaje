@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:app_peaje/user.dart';
 
 class ProfileScreen extends StatelessWidget {
-  const ProfileScreen({super.key});
+  final User user;
+
+  const ProfileScreen({super.key, required this.user});
 
   @override
   Widget build(BuildContext context) {
@@ -44,18 +47,18 @@ class ProfileScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 16.0),
-            const Text(
-              'Usuario Ejemplo',
-              style: TextStyle(
+            Text(
+              user.name,
+              style: const TextStyle(
                 fontSize: 24.0,
                 fontWeight: FontWeight.bold,
                 color: Colors.white,
               ),
             ),
             const SizedBox(height: 8.0),
-            const Text(
-              'usuario@ejemplo.com',
-              style: TextStyle(
+            Text(
+              user.email,
+              style: const TextStyle(
                 fontSize: 16.0,
                 color: Colors.white,
               ),
