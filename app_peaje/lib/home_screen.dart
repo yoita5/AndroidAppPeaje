@@ -20,7 +20,7 @@ class _MainHomeScreenState extends State<MainHomeScreen> {
   bool _isRechargeButtonPressed = false;
   bool _isVehiclesButtonPressed = false;
   bool _isScanQrButtonPressed = false;
-  bool _isAddPaymentMethodButtonPressed = false;
+  final bool _isAddPaymentMethodButtonPressed = false;
   bool _isAddVehicleButtonPressed = false;
 
   static const double _minRechargeAmount = 5.0;
@@ -179,9 +179,9 @@ Future<void> _showRechargeDialog() async {
               onChanged: (value) {
                 rechargeAmount = double.tryParse(value) ?? 0.0;
               },
-              decoration: InputDecoration(
+              decoration: const InputDecoration(
                 hintText: 'Monto (mínimo \$$_minRechargeAmount)',
-                border: const OutlineInputBorder(),
+                border: OutlineInputBorder(),
               ),
             ),
           ],
@@ -206,7 +206,7 @@ Future<void> _showRechargeDialog() async {
                 Navigator.of(context).pop();
               } else {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('El monto mínimo de recarga es \$$_minRechargeAmount')),
+                  const SnackBar(content: Text('El monto mínimo de recarga es \$$_minRechargeAmount')),
                 );
               }
             },
@@ -267,7 +267,7 @@ void _showAddVehicleDialog() async {
     'Changan', 'Geely', 'BYD'
   ];
 
-  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+  final GlobalKey<FormState> formKey = GlobalKey<FormState>();
 
   await showDialog(
     context: context,
@@ -275,7 +275,7 @@ void _showAddVehicleDialog() async {
       return AlertDialog(
         title: const Text('Agregar Vehículo'),
         content: Form(
-          key: _formKey,
+          key: formKey,
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -334,7 +334,7 @@ void _showAddVehicleDialog() async {
           TextButton(
             child: const Text('Guardar'),
             onPressed: () {
-              if (_formKey.currentState?.validate() ?? false) {
+              if (formKey.currentState?.validate() ?? false) {
                 if (licensePlate != null && make != null) {
                   widget.user.addVehicle(licensePlate!, make!); // Agrega el vehículo
                   Navigator.of(context).pop();
@@ -396,12 +396,12 @@ void _showAddVehicleDialog() async {
         );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('No hay saldo suficiente para realizar el cobro.')),
+          const SnackBar(content: Text('No hay saldo suficiente para realizar el cobro.')),
         );
       }
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Código QR inválido')),
+        const SnackBar(content: Text('Código QR inválido')),
       );
     }
   }

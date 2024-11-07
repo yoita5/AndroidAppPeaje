@@ -4,7 +4,7 @@ import 'package:app_peaje/user.dart';
 class PaymentMethodScreen extends StatefulWidget {
   final User user;
 
-  const PaymentMethodScreen({Key? key, required this.user}) : super(key: key);
+  const PaymentMethodScreen({super.key, required this.user});
 
   @override
   _PaymentMethodScreenState createState() => _PaymentMethodScreenState();
@@ -49,7 +49,7 @@ class _PaymentMethodScreenState extends State<PaymentMethodScreen> {
       );
 
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: const Text('Método de pago agregado con éxito.')),
+        const SnackBar(content: Text('Método de pago agregado con éxito.')),
       );
 
       Navigator.of(context).pop();
