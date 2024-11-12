@@ -169,8 +169,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         },
                         decoration: InputDecoration(
                           suffixIcon: Icon(
-                            _isNameValid ? Icons.check : Icons.clear,
-                            color: _isNameValid ? Colors.green : Colors.red,
+                            _isNameValid ? Icons.check : Icons.person,
+                            color: _isNameValid ? Colors.green : Colors.grey,
                           ),
                           label: const Text(
                             'Nombre Completo',
@@ -191,8 +191,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         },
                         decoration: InputDecoration(
                           suffixIcon: Icon(
-                            _isPhoneValid ? Icons.check : Icons.clear,
-                            color: _isPhoneValid ? Colors.green : Colors.red,
+                            _isPhoneValid ? Icons.check : Icons.phone,
+                            color: _isPhoneValid ? Colors.green : Colors.grey,
                           ),
                           label: const Text(
                             'Teléfono',
@@ -213,8 +213,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         },
                         decoration: InputDecoration(
                           suffixIcon: Icon(
-                            _isEmailValid ? Icons.check : Icons.clear,
-                            color: _isEmailValid ? Colors.green : Colors.red,
+                            _isEmailValid ? Icons.check : Icons.email,
+                            color: _isEmailValid ? Colors.green : Colors.grey,
                           ),
                           label: const Text(
                             'Correo Electrónico',

@@ -1,5 +1,7 @@
+import 'package:app_peaje/usermanagementscreen.dart';
 import 'package:flutter/material.dart';
 import 'package:app_peaje/user.dart';
+import 'package:app_peaje/paymentmethodscreen.dart';
 
 class ProfileScreen extends StatelessWidget {
   final User user;
@@ -64,25 +66,24 @@ class ProfileScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 32.0),
-            CustomButton(
+            ProfileButton(
               title: 'Detalles de Facturación',
               icon: Icons.wallet,
               onTap: () {
-                // Navigate to billing details
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) =>  PaymentMethodScreen(user: user)),
+                );
               },
             ),
-            CustomButton(
+            ProfileButton(
               title: 'Gestión de Usuarios',
               icon: Icons.person_outline,
               onTap: () {
-                // Navigate to user management
-              },
-            ),
-            CustomButton(
-              title: 'Información',
-              icon: Icons.info_outline,
-              onTap: () {
-                // Navigate to information
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) =>  UserManagementScreen(user: user)),
+                );
               },
             ),
             const Spacer(),
@@ -148,12 +149,12 @@ class ProfileScreen extends StatelessWidget {
   }
 }
 
-class CustomButton extends StatelessWidget {
+class ProfileButton extends StatelessWidget {
   final String title;
   final IconData icon;
   final VoidCallback onTap;
 
-  const CustomButton({
+  const ProfileButton({
     super.key,
     required this.title,
     required this.icon,
@@ -178,10 +179,10 @@ class CustomButton extends StatelessWidget {
               ),
             ],
           ),
-          padding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 16.0),
+          padding: const EdgeInsets.symmetric(vertical: 14.0, horizontal: 16.0),
           child: Row(
             children: [
-              Icon(icon, color: Colors.black),
+              Icon(icon, color: const Color(0xFF751aff)),
               const SizedBox(width: 16.0),
               Expanded(
                 child: Text(
@@ -189,13 +190,13 @@ class CustomButton extends StatelessWidget {
                   style: const TextStyle(
                     fontSize: 16.0,
                     fontWeight: FontWeight.w500,
-                    color: Colors.black,
+                    color: Color(0xFF751aff),
                   ),
                 ),
               ),
               const Icon(
                 Icons.arrow_right,
-                color: Colors.black,
+                color: Color(0xFF751aff),
               ),
             ],
           ),

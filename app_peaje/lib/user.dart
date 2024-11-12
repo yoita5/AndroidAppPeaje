@@ -25,20 +25,50 @@ class PaymentMethod {
 class User {
   final String name;
   final String email;
+  String phone; // Campo para el teléfono
+  String password; // Campo para la contraseña
   double balance;
-  List<PaymentMethod> paymentMethods; // List to store payment methods
-  List<Vehicle> vehicles; // List to store vehicles
+  List<PaymentMethod> paymentMethods;
+  List<Vehicle> vehicles;
 
   User({
     required this.name,
     required this.email,
+    this.phone = '', // Inicializa el teléfono
+    this.password = '', // Inicializa la contraseña
     this.balance = 0.0,
-    List<PaymentMethod>? paymentMethods, // Accepts a list of payment methods as an optional parameter
-    List<Vehicle>? vehicles, // Accepts a list of vehicles as an optional parameter
-  })  : paymentMethods = paymentMethods ?? [], // Initializes paymentMethods to an empty list if null
-        vehicles = vehicles ?? []; // Initializes vehicles to an empty list if null
+    List<PaymentMethod>? paymentMethods,
+    List<Vehicle>? vehicles,
+  })  : paymentMethods = paymentMethods ?? [],
+        vehicles = vehicles ?? [];
 
-  // Method to add a payment method
+  // Método para actualizar el nombre, email, teléfono y contraseña
+  void updateUser({
+    String? newName,
+    String? newEmail,
+    String? newPhone,
+    String? newPassword,
+  }) {
+    if (newName != null) {
+      // Si se proporciona un nuevo nombre, se actualiza
+      // Se requiere un manejo especial si name es final
+      // Esto podría implicar un diseño diferente si se necesita inmutabilidad
+      // Por ahora, dejaré el nombre como está.
+      // name = newName;  // Descomentar si se cambia el diseño
+    }
+    if (newEmail != null) {
+      // Se debe manejar la inmutabilidad si email es final.
+      // email = newEmail;  // Descomentar si se cambia el diseño
+    }
+    if (newPhone != null) {
+      phone = newPhone; // Actualiza el teléfono
+    }
+    if (newPassword != null) {
+      password = newPassword; // Actualiza la contraseña
+    }
+  }
+
+  // Método para agregar un método de pago
   void addPaymentMethod(String cardNumber, String cardHolderName, String expiryDate, String cvv) {
     paymentMethods.add(PaymentMethod(
       cardNumber: cardNumber,
@@ -48,27 +78,27 @@ class User {
     ));
   }
 
-  // Method to remove a payment method by card number
+  // Método para eliminar un método de pago por número de tarjeta
   void removePaymentMethod(String cardNumber) {
     paymentMethods.removeWhere((paymentMethod) => paymentMethod.cardNumber == cardNumber);
   }
 
-  // Method to get a list of payment methods
+  // Método para obtener una lista de métodos de pago
   List<PaymentMethod> getPaymentMethods() {
     return paymentMethods;
   }
 
-  // Method to add a vehicle
+  // Método para agregar un vehículo
   void addVehicle(String licensePlate, String make) {
     vehicles.add(Vehicle(licensePlate: licensePlate, make: make));
   }
 
-  // Method to remove a vehicle by license plate
+  // Método para eliminar un vehículo por matrícula
   void removeVehicle(String licensePlate) {
     vehicles.removeWhere((vehicle) => vehicle.licensePlate == licensePlate);
   }
 
-  // Method to get a list of vehicles
+  // Método para obtener una lista de vehículos
   List<Vehicle> getVehicles() {
     return vehicles;
   }
