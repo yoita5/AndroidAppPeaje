@@ -35,6 +35,7 @@ dependencies:
   line_awesome_flutter: ^1.0.1
   qr_flutter: ^4.0.0
   flutter_barcode_scanner: ^2.0.0
+  image_picker: ^0.8.6+1
   
 
 

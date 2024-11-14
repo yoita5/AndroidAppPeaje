@@ -1,3 +1,10 @@
+class Transaction {
+  final double amount;
+  final DateTime dateTime;
+
+  Transaction(this.amount) : dateTime = DateTime.now();
+}
+
 class Vehicle {
   final String licensePlate;
   final String make;
@@ -30,6 +37,7 @@ class User {
   double balance;
   List<PaymentMethod> paymentMethods;
   List<Vehicle> vehicles;
+  List<Transaction> transactions; // Lista de transacciones
 
   User({
     required this.name,
@@ -40,7 +48,8 @@ class User {
     List<PaymentMethod>? paymentMethods,
     List<Vehicle>? vehicles,
   })  : paymentMethods = paymentMethods ?? [],
-        vehicles = vehicles ?? [];
+        vehicles = vehicles ?? [],
+        transactions = []; // Inicializa la lista de transacciones
 
   // Método para actualizar el nombre, email, teléfono y contraseña
   void updateUser({
@@ -50,15 +59,11 @@ class User {
     String? newPassword,
   }) {
     if (newName != null) {
-      // Si se proporciona un nuevo nombre, se actualiza
       // Se requiere un manejo especial si name es final
-      // Esto podría implicar un diseño diferente si se necesita inmutabilidad
-      // Por ahora, dejaré el nombre como está.
-      // name = newName;  // Descomentar si se cambia el diseño
+      // Por ahora, dejaremos el nombre como está.
     }
     if (newEmail != null) {
-      // Se debe manejar la inmutabilidad si email es final.
-      // email = newEmail;  // Descomentar si se cambia el diseño
+      // Manejo de inmutabilidad si email es final.
     }
     if (newPhone != null) {
       phone = newPhone; // Actualiza el teléfono
@@ -101,5 +106,15 @@ class User {
   // Método para obtener una lista de vehículos
   List<Vehicle> getVehicles() {
     return vehicles;
+  }
+
+  // Método para agregar una transacción
+  void addTransaction(double amount) {
+    transactions.add(Transaction(amount)); // Agrega la transacción
+  }
+
+  // Método para obtener una lista de transacciones
+  List<Transaction> getTransactions() {
+    return transactions;
   }
 }

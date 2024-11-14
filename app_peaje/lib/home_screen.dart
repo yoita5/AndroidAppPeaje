@@ -43,14 +43,51 @@ class _MainHomeScreenState extends State<MainHomeScreen> {
     });
   }
 
-  void _toggleHistoryButtonState() {
-    setState(() {
-      _isHistoryButtonPressed = true;
-    });
-    setState(() {
-      _isHistoryButtonPressed = false;
-    });
-  }
+  void _toggleHistoryButtonState() async {
+  setState(() {
+    _isHistoryButtonPressed = true;
+  });
+
+  // Mostrar el historial en un diálogo
+  await _showTransactionHistoryDialog();
+
+  setState(() {
+    _isHistoryButtonPressed = false;
+  });
+}
+
+Future<void> _showTransactionHistoryDialog() async {
+  showDialog(
+    context: context,
+    builder: (BuildContext context) {
+      return AlertDialog(
+        title: const Text('Historial de Transacciones'),
+        content: SizedBox(
+          width: 300, // Puedes ajustar el ancho
+          height: 400, // Puedes ajustar la altura
+          child: ListView.builder(
+            itemCount: widget.user.transactions.length,
+            itemBuilder: (context, index) {
+              final transaction = widget.user.transactions[index];
+              return ListTile(
+                title: Text('Transacción: \$${transaction.amount.toStringAsFixed(2)}'),
+                subtitle: Text('${transaction.dateTime.toLocal()}'),
+              );
+            },
+          ),
+        ),
+        actions: [
+          TextButton(
+            child: const Text('Cerrar'),
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+          ),
+        ],
+      );
+    },
+  );
+}
 
   void _toggleQrButtonState() async {
     setState(() {
@@ -251,105 +288,110 @@ void _onRemoveVehicle(String licensePlate) {
 }
 
 void _showAddVehicleDialog() async {
-  setState(() {
-    _isAddVehicleButtonPressed = true;
-  });
+    setState(() {
+      _isAddVehicleButtonPressed = true;
+    });
 
-  String? licensePlate;
-  String? make;
-  List<String> makes = [
-    'Toyota', 'Honda', 'Ford', 'Chevrolet', 'Volkswagen', 'BMW', 'Mercedes-Benz',
-    'Audi', 'Nissan', 'Hyundai', 'Kia', 'Subaru', 'Mazda', 'Dodge', 'Chrysler',
-    'Jeep', 'Buick', 'GMC', 'Porsche', 'Lexus', 'Infinity', 'Land Rover', 'Jaguar',
-    'Fiat', 'Volvo', 'Mitsubishi', 'Tesla', 'Acura', 'Lincoln', 'Mini', 'Alfa Romeo',
-    'Ram', 'Genesis', 'Scion', 'Rover', 'Hummer', 'Smart', 'Peugeot', 'Renault',
-    'Citroën', 'Skoda', 'Seat', 'Opel', 'Saab', 'Lancia', 'Tata', 'Mahindra',
-    'Changan', 'Geely', 'BYD'
-  ];
+    String? licensePlate;
+    String? make;
+    List<String> makes = [
+      'Toyota', 'Honda', 'Ford', 'Chevrolet', 'Volkswagen', 'BMW', 'Mercedes-Benz',
+      'Audi', 'Nissan', 'Hyundai', 'Kia', 'Subaru', 'Mazda', 'Dodge', 'Chrysler',
+      'Jeep', 'Buick', 'GMC', 'Porsche', 'Lexus', 'Infinity', 'Land Rover', 'Jaguar',
+      'Fiat', 'Volvo', 'Mitsubishi', 'Tesla', 'Acura', 'Lincoln', 'Mini', 'Alfa Romeo',
+      'Ram', 'Genesis', 'Scion', 'Rover', 'Hummer', 'Smart', 'Peugeot', 'Renault',
+      'Citroën', 'Skoda', 'Seat', 'Opel', 'Saab', 'Lancia', 'Tata', 'Mahindra',
+      'Changan', 'Geely', 'BYD'
+    ];
 
-  final GlobalKey<FormState> formKey = GlobalKey<FormState>();
+    final GlobalKey<FormState> formKey = GlobalKey<FormState>();
 
-  await showDialog(
-    context: context,
-    builder: (BuildContext context) {
-      return AlertDialog(
-        title: const Text('Agregar Vehículo'),
-        content: Form(
-          key: formKey,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Text('Ingrese los detalles de su vehículo:'),
-              const SizedBox(height: 16),
-              TextFormField(
-                keyboardType: TextInputType.text,
-                onChanged: (value) {
-                  licensePlate = value.isNotEmpty ? value : null;
-                },
-                decoration: const InputDecoration(
-                  hintText: 'Placa',
-                  border: OutlineInputBorder(),
+    await showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Agregar Vehículo'),
+          content: Form(
+            key: formKey,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text('Ingrese los detalles de su vehículo:'),
+                const SizedBox(height: 16),
+                TextFormField(
+                  keyboardType: TextInputType.text,
+                  onChanged: (value) {
+                    licensePlate = value.isNotEmpty ? value : null;
+                  },
+                  decoration: const InputDecoration(
+                    hintText: 'Placa',
+                    border: OutlineInputBorder(),
+                  ),
+                  validator: (value) {
+                    if (value != null && RegExp(r'^[a-zA-Z0-9]+$').hasMatch(value)) {
+                      return null;
+                    } else {
+                      return 'La placa debe contener solo letras y números.';
+                    }
+                  },
                 ),
-                validator: (value) {
-                  if (value != null && RegExp(r'^[a-zA-Z0-9]+$').hasMatch(value)) {
+                const SizedBox(height: 16),
+                DropdownButtonFormField<String>(
+                  value: make,
+                  onChanged: (value) {
+                    make = value;
+                  },
+                  items: makes.map((String item) {
+                    return DropdownMenuItem<String>(
+                      value: item,
+                      child: Text(item),
+                    );
+                  }).toList(),
+                  decoration: const InputDecoration(
+                    hintText: 'Marca',
+                    border: OutlineInputBorder(),
+                  ),
+                  validator: (value) {
+                    if (value == null) {
+                      return 'Seleccione una marca.';
+                    }
                     return null;
-                  } else {
-                    return 'La placa debe contener solo letras y números.';
-                  }
-                },
-              ),
-              const SizedBox(height: 16),
-              DropdownButtonFormField<String>(
-                value: make,
-                onChanged: (value) {
-                  make = value;
-                },
-                items: makes.map((String item) {
-                  return DropdownMenuItem<String>(
-                    value: item,
-                    child: Text(item),
-                  );
-                }).toList(),
-                decoration: const InputDecoration(
-                  hintText: 'Marca',
-                  border: OutlineInputBorder(),
+                  },
                 ),
-                validator: (value) {
-                  if (value == null) {
-                    return 'Seleccione una marca.';
+                const SizedBox(height: 20),
+                const Text(
+                  'Para eliminar un vehiculo guardado deslice hacia la derecha',
+                  style: TextStyle(color: Colors.black),
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              child: const Text('Cancelar'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+            TextButton(
+              child: const Text('Guardar'),
+              onPressed: () {
+                if (formKey.currentState?.validate() ?? false) {
+                  if (licensePlate != null && make != null) {
+                    widget.user.addVehicle(licensePlate!, make!); // Agrega el vehículo
+                    Navigator.of(context).pop();
                   }
-                  return null;
-                },
-              ),
-            ],
-          ),
-        ),
-        actions: [
-          TextButton(
-            child: const Text('Cancelar'),
-            onPressed: () {
-              Navigator.of(context).pop();
-            },
-          ),
-          TextButton(
-            child: const Text('Guardar'),
-            onPressed: () {
-              if (formKey.currentState?.validate() ?? false) {
-                if (licensePlate != null && make != null) {
-                  widget.user.addVehicle(licensePlate!, make!); // Agrega el vehículo
-                  Navigator.of(context).pop();
                 }
-              }
-            },
-          ),
-        ],
-      );
-    },
-  );
+              },
+            ),
+          ],
+        );
+      },
+    );
 
-  setState(() {
-    _isAddVehicleButtonPressed = false;
-  });
+    setState(() {
+      _isAddVehicleButtonPressed = false;
+    });
 }
 
   void _toggleScanQrButtonState() async {
