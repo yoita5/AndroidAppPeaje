@@ -3,7 +3,8 @@ class Transaction {
   final DateTime dateTime;
   final String type; // 'Recharge' or 'Charge'
 
-  Transaction(this.amount, this.type) : dateTime = DateTime.now();
+  Transaction(this.amount, this.type, {DateTime? dateTime})
+      : dateTime = dateTime ?? DateTime.now();
 }
 
 class Vehicle {
@@ -33,26 +34,25 @@ class PaymentMethod {
 class User {
   final String name;
   final String email;
-  String phone; // Campo para el teléfono
-  String password; // Campo para la contraseña
+  String phone;
+  String password;
   double balance;
   List<PaymentMethod> paymentMethods;
   List<Vehicle> vehicles;
-  List<Transaction> transactions; // Lista de transacciones
+  List<Transaction> transactions;
 
   User({
     required this.name,
     required this.email,
-    this.phone = '', // Inicializa el teléfono
-    this.password = '', // Inicializa la contraseña
+    this.phone = '',
+    this.password = '',
     this.balance = 0.0,
     List<PaymentMethod>? paymentMethods,
     List<Vehicle>? vehicles,
   })  : paymentMethods = paymentMethods ?? [],
         vehicles = vehicles ?? [],
-        transactions = []; // Inicializa la lista de transacciones
+        transactions = [];
 
-  // Método para actualizar el nombre, email, teléfono y contraseña
   void updateUser({
     String? newName,
     String? newEmail,
@@ -60,21 +60,19 @@ class User {
     String? newPassword,
   }) {
     if (newName != null) {
-      // Se requiere un manejo especial si name es final
-      // Por ahora, dejaremos el nombre como está.
+      // Manejo de inmutabilidad si name es final
     }
     if (newEmail != null) {
-      // Manejo de inmutabilidad si email es final.
+      // Manejo de inmutabilidad si email es final
     }
     if (newPhone != null) {
-      phone = newPhone; // Actualiza el teléfono
+      phone = newPhone;
     }
     if (newPassword != null) {
-      password = newPassword; // Actualiza la contraseña
+      password = newPassword;
     }
   }
 
-  // Método para agregar un método de pago
   void addPaymentMethod(String cardNumber, String cardHolderName, String expiryDate, String cvv) {
     paymentMethods.add(PaymentMethod(
       cardNumber: cardNumber,
@@ -84,38 +82,38 @@ class User {
     ));
   }
 
-  // Método para eliminar un método de pago por número de tarjeta
   void removePaymentMethod(String cardNumber) {
     paymentMethods.removeWhere((paymentMethod) => paymentMethod.cardNumber == cardNumber);
   }
 
-  // Método para obtener una lista de métodos de pago
   List<PaymentMethod> getPaymentMethods() {
     return paymentMethods;
   }
 
-  // Método para agregar un vehículo
   void addVehicle(String licensePlate, String make) {
     vehicles.add(Vehicle(licensePlate: licensePlate, make: make));
   }
 
-  // Método para eliminar un vehículo por matrícula
   void removeVehicle(String licensePlate) {
     vehicles.removeWhere((vehicle) => vehicle.licensePlate == licensePlate);
   }
 
-  // Método para obtener una lista de vehículos
   List<Vehicle> getVehicles() {
     return vehicles;
   }
 
-  // Método para agregar una transacción
-  void addTransaction(double amount, DateTime dateTime, String type) {
-    transactions.add(Transaction(amount, type)); // Agrega la transacción con tipo
+  void addTransaction(double amount, String type) {
+    transactions.add(Transaction(amount, type));
   }
 
-  // Método para obtener una lista de transacciones
   List<Transaction> getTransactions() {
     return transactions;
+  }
+
+  String getTransactionHistory() {
+    return transactions.map((transaction) {
+      String formattedDate = '${transaction.dateTime.day}/${transaction.dateTime.month}/${transaction.dateTime.year} - ${transaction.dateTime.hour}:${transaction.dateTime.minute}';
+      return '${transaction.type}: \$${transaction.amount.toStringAsFixed(2)} (Fecha: $formattedDate)';
+    }).join('\n');
   }
 }

@@ -63,15 +63,17 @@ Future<void> _showTransactionHistoryDialog() async {
       return AlertDialog(
         title: const Text('Historial de Transacciones'),
         content: SizedBox(
-          width: 300, // Puedes ajustar el ancho
-          height: 400, // Puedes ajustar la altura
+          width: 300,
+          height: 400,
           child: ListView.builder(
-            itemCount: widget.user.transactions.length,
+            itemCount: widget.user.getTransactions().length,
             itemBuilder: (context, index) {
-              final transaction = widget.user.transactions[index];
+              final transaction = widget.user.getTransactions()[index];
+              String formattedDate = '${transaction.dateTime.day}/${transaction.dateTime.month}/${transaction.dateTime.year} - ${transaction.dateTime.hour}:${transaction.dateTime.minute}';
+
               return ListTile(
-                title: Text('Transacción: \$${transaction.amount.toStringAsFixed(2)}'),
-                subtitle: Text('${transaction.dateTime.toLocal()}'),
+                title: Text('${transaction.type}: \$${transaction.amount.toStringAsFixed(2)}'),
+                subtitle: Text(formattedDate),
               );
             },
           ),
@@ -236,7 +238,7 @@ Future<void> _showRechargeDialog() async {
               if (rechargeAmount >= _minRechargeAmount) {
                 setState(() {
                   widget.user.balance += rechargeAmount; // Actualiza el saldo
-                  widget.user.addTransaction(rechargeAmount, DateTime.now(), 'Recharge'); // Agrega la transacción
+                  widget.user.addTransaction(rechargeAmount, 'Recarga'); // Agrega la transacción
                 });
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(content: Text('Recarga de \$${rechargeAmount.toStringAsFixed(2)} realizada. Saldo actual: \$${widget.user.balance.toStringAsFixed(2)}')),
@@ -433,7 +435,7 @@ void _processScannedQrCode(String scannedData) {
     if (widget.user.balance >= chargeAmount) {
       setState(() {
         widget.user.balance -= chargeAmount;
-        widget.user.addTransaction(-chargeAmount, DateTime.now(), 'Charge'); // Agrega la transacción
+        widget.user.addTransaction(chargeAmount, 'Cobro'); // Agrega la transacción
       });
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Cobro de \$$chargeAmount realizado. Saldo actual: \$${widget.user.balance.toStringAsFixed(2)}')),
