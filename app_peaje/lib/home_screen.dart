@@ -235,7 +235,8 @@ Future<void> _showRechargeDialog() async {
             onPressed: () {
               if (rechargeAmount >= _minRechargeAmount) {
                 setState(() {
-                  widget.user.balance += rechargeAmount; // Actualiza el saldo del usuario
+                  widget.user.balance += rechargeAmount; // Actualiza el saldo
+                  widget.user.addTransaction(rechargeAmount, DateTime.now(), 'Recharge'); // Agrega la transacción
                 });
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(content: Text('Recarga de \$${rechargeAmount.toStringAsFixed(2)} realizada. Saldo actual: \$${widget.user.balance.toStringAsFixed(2)}')),
@@ -423,31 +424,31 @@ void _showAddVehicleDialog() async {
     }
   }
 
-  void _processScannedQrCode(String scannedData) {
-    List<String> parts = scannedData.split(':');
-    if (parts.length == 2 && parts[0] == 'usuario') {
-      String username = parts[1];
-      double chargeAmount = _minRechargeAmount; // Importe del cobro por peaje
+void _processScannedQrCode(String scannedData) {
+  List<String> parts = scannedData.split(':');
+  if (parts.length == 2 && parts[0] == 'usuario') {
+    String username = parts[1];
+    double chargeAmount = _minRechargeAmount; // Importe del cobro por peaje
 
-      if (widget.user.balance >= chargeAmount) {
-        setState(() {
-          widget.user.balance -= chargeAmount;
-        });
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Cobro de \$$chargeAmount realizado. Saldo actual: \$${widget.user.balance.toStringAsFixed(2)}')),
-        );
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('No hay saldo suficiente para realizar el cobro.')),
-        );
-      }
+    if (widget.user.balance >= chargeAmount) {
+      setState(() {
+        widget.user.balance -= chargeAmount;
+        widget.user.addTransaction(-chargeAmount, DateTime.now(), 'Charge'); // Agrega la transacción
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Cobro de \$$chargeAmount realizado. Saldo actual: \$${widget.user.balance.toStringAsFixed(2)}')),
+      );
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Código QR inválido')),
+        const SnackBar(content: Text('No hay saldo suficiente para realizar el cobro.')),
       );
     }
+  } else {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Código QR inválido')),
+    );
   }
-
+}
   Widget _buildButton({
     required bool isPressed,
     required String text,

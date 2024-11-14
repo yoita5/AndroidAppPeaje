@@ -1,8 +1,9 @@
 class Transaction {
   final double amount;
   final DateTime dateTime;
+  final String type; // 'Recharge' or 'Charge'
 
-  Transaction(this.amount) : dateTime = DateTime.now();
+  Transaction(this.amount, this.type) : dateTime = DateTime.now();
 }
 
 class Vehicle {
@@ -109,8 +110,8 @@ class User {
   }
 
   // Método para agregar una transacción
-  void addTransaction(double amount) {
-    transactions.add(Transaction(amount)); // Agrega la transacción
+  void addTransaction(double amount, DateTime dateTime, String type) {
+    transactions.add(Transaction(amount, type)); // Agrega la transacción con tipo
   }
 
   // Método para obtener una lista de transacciones
