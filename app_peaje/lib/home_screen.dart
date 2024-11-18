@@ -364,7 +364,7 @@ void _showAddVehicleDialog() async {
                 const SizedBox(height: 20),
                 const Text(
                   'Para eliminar un vehiculo guardado deslice hacia la derecha',
-                  style: TextStyle(color: Colors.black),
+                  style: TextStyle(color: Colors.purple),
                 ),
               ],
             ),

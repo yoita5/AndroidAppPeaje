@@ -37,6 +37,7 @@ class User {
   String phone;
   String password;
   double balance;
+  String? profileImagePath; // Nueva propiedad para la imagen de perfil
   List<PaymentMethod> paymentMethods;
   List<Vehicle> vehicles;
   List<Transaction> transactions;
@@ -47,6 +48,7 @@ class User {
     this.phone = '',
     this.password = '',
     this.balance = 0.0,
+    this.profileImagePath, // Inicializa la propiedad
     List<PaymentMethod>? paymentMethods,
     List<Vehicle>? vehicles,
   })  : paymentMethods = paymentMethods ?? [],
@@ -58,18 +60,26 @@ class User {
     String? newEmail,
     String? newPhone,
     String? newPassword,
+    String? newProfileImagePath, // Agregar parámetro para la imagen de perfil
   }) {
     if (newName != null) {
       // Manejo de inmutabilidad si name es final
+      // No puedes cambiar el valor de name porque es final.
+      // Considera usar un método diferente si necesitas cambiarlo.
     }
     if (newEmail != null) {
       // Manejo de inmutabilidad si email es final
+      // No puedes cambiar el valor de email porque es final.
+      // Al igual que con name, considera otro enfoque.
     }
     if (newPhone != null) {
       phone = newPhone;
     }
     if (newPassword != null) {
       password = newPassword;
+    }
+    if (newProfileImagePath != null) {
+      profileImagePath = newProfileImagePath; // Actualiza la imagen de perfil
     }
   }
 

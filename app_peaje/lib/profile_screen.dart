@@ -1,8 +1,9 @@
-import 'package:app_peaje/usermanagementscreen.dart';
+import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:app_peaje/usermanagementscreen.dart';
 import 'package:app_peaje/user.dart';
 import 'package:app_peaje/paymentmethodscreen.dart';
-import 'package:image_picker/image_picker.dart';
 
 class ProfileScreen extends StatefulWidget {
   final User user;
@@ -14,7 +15,11 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
-  String? _profileImagePath;
+  void _updateProfileImage(String newPath) {
+    setState(() {
+      widget.user.profileImagePath = newPath; // Actualiza la ruta de la imagen
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -43,7 +48,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     IconButton(
                       icon: const Icon(Icons.arrow_back, color: Colors.white),
                       onPressed: () {
-                        Navigator.pop(context); // Regresar a la pantalla anterior
+                        Navigator.pop(context);
                       },
                     ),
                     const SizedBox(width: 8.0),
@@ -57,15 +62,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ),
                   ],
                 ),
-                const Center(
+                Center(
                   child: Stack(
                     alignment: Alignment.bottomRight,
                     children: [
-                      CircleAvatar(
-                        radius: 50,
-                        backgroundImage: AssetImage('assets/default_profile.png'),
-                      ),
-                      _EditPhotoButton(),
+                      ProfileImage(profileImagePath: widget.user.profileImagePath), // Pasar la ruta de la imagen
+                      EditPhotoButton(onImagePicked: _updateProfileImage), // Pasar el callback
                     ],
                   ),
                 ),
@@ -93,7 +95,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   onTap: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => PaymentMethodScreen(user: widget.user)),
+                      MaterialPageRoute(
+                        builder: (context) => PaymentMethodScreen(user: widget.user),
+                      ),
                     );
                   },
                 ),
@@ -103,7 +107,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   onTap: () {
                     Navigator.push(
                       context,
-                      MaterialPageRoute(builder: (context) => UserManagementScreen(user: widget.user)),
+                      MaterialPageRoute(
+                        builder: (context) => UserManagementScreen(user: widget.user),
+                      ),
                     );
                   },
                 ),
@@ -144,17 +150,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  Future<void> _pickImage() async {
-    final ImagePicker picker = ImagePicker();
-    final XFile? image = await picker.pickImage(source: ImageSource.gallery);
-
-    if (image != null) {
-      setState(() {
-        _profileImagePath = image.path;
-      });
-    }
-  }
-
   void _showDeleteAccountDialog(BuildContext context) {
     showDialog(
       context: context,
@@ -193,7 +188,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
             TextButton(
               onPressed: () {
                 // Código para cerrar sesión
-                // Cambia '/home' por la ruta correcta que lleva a LoginPage
                 Navigator.of(context).pushNamedAndRemoveUntil('/login', (route) => false);
               },
               child: const Text('Sí', style: TextStyle(color: Color(0xFF751aff))),
@@ -211,15 +205,37 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 }
 
-class _EditPhotoButton extends StatelessWidget {
-  const _EditPhotoButton({super.key});
+class ProfileImage extends StatelessWidget {
+  final String? profileImagePath; // Recibe el path de la imagen
+
+  const ProfileImage({super.key, this.profileImagePath});
+
+  @override
+  Widget build(BuildContext context) {
+    return CircleAvatar(
+      radius: 50,
+      backgroundImage: profileImagePath != null && profileImagePath!.isNotEmpty
+          ? FileImage(File(profileImagePath!)) // Muestra la imagen seleccionada
+          : const AssetImage('assets/images/default_profile.png'), // Imagen por defecto
+    );
+  }
+}
+
+class EditPhotoButton extends StatelessWidget {
+  final Function(String) onImagePicked; // Callback para pasar la imagen seleccionada
+
+  const EditPhotoButton({super.key, required this.onImagePicked});
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () {
-        final profileScreenState = context.findAncestorStateOfType<_ProfileScreenState>();
-        profileScreenState?._pickImage();
+      onTap: () async {
+        final ImagePicker picker = ImagePicker();
+        final XFile? image = await picker.pickImage(source: ImageSource.gallery);
+
+        if (image != null) {
+          onImagePicked(image.path); // Llama al callback con la nueva ruta de la imagen
+        }
       },
       child: Container(
         padding: const EdgeInsets.all(6.0),
