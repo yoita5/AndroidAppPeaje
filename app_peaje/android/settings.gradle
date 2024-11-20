@@ -7,6 +7,10 @@ pluginManagement {
         return flutterSdkPath
     }()
 
+    include ':app'
+    include  ':flutter_barcode_scanner'
+  
+
     includeBuild("$flutterSdkPath/packages/flutter_tools/gradle")
 
     repositories {
@@ -22,4 +26,4 @@ plugins {
     id "org.jetbrains.kotlin.android" version "1.8.22" apply false
 }
 
-include ":app"
+include ':app', ':flutter_barcode_scanner'

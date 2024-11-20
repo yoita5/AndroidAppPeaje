@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart'; // Importar para usar TextInputFormatter
 import 'package:app_peaje/user.dart';
 
 class PaymentMethodScreen extends StatefulWidget {
   final User user;
 
-  const PaymentMethodScreen({Key? key, required this.user}) : super(key: key);
+  const PaymentMethodScreen({super.key, required this.user});
 
   @override
   _PaymentMethodScreenState createState() => _PaymentMethodScreenState();
@@ -17,11 +18,16 @@ class _PaymentMethodScreenState extends State<PaymentMethodScreen> {
   final TextEditingController _expiryDateController = TextEditingController();
   final TextEditingController _cvvController = TextEditingController();
   bool _isCardNumberValid = false;
+  bool _isCardHolderNameValid = false;
   bool _isExpiryDateValid = false;
   bool _isCvvValid = false;
 
   bool _validateCardNumber(String cardNumber) {
     return cardNumber.length == 16; // Validación básica
+  }
+
+  bool _validateCardHolderName(String name) {
+    return name.isNotEmpty; // Validación básica
   }
 
   bool _validateExpiryDate(String expiryDate) {
@@ -34,6 +40,7 @@ class _PaymentMethodScreenState extends State<PaymentMethodScreen> {
 
   void _savePaymentMethod() {
     if (_formKey.currentState?.validate() ?? false) {
+      // Aquí debes definir cómo crear el método de pago
       PaymentMethod newPaymentMethod = PaymentMethod(
         cardNumber: _cardNumberController.text,
         cardHolderName: _cardHolderNameController.text,
@@ -49,7 +56,7 @@ class _PaymentMethodScreenState extends State<PaymentMethodScreen> {
       );
 
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: const Text('Método de pago agregado con éxito.')),
+        const SnackBar(content: Text('Método de pago agregado con éxito.')),
       );
 
       Navigator.of(context).pop();
@@ -60,11 +67,16 @@ class _PaymentMethodScreenState extends State<PaymentMethodScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
+        height: double.infinity,
+        width: double.infinity,
         decoration: const BoxDecoration(
           gradient: LinearGradient(
+            colors: [
+              Color(0xFF751aff),
+              Color(0xFFff80ff),
+            ],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
-            colors: [Color(0xFFAB47BC), Color(0xFFE040FB)],
           ),
         ),
         child: Center(
@@ -123,7 +135,12 @@ class _PaymentMethodScreenState extends State<PaymentMethodScreen> {
                     _buildTextField(
                       controller: _cardHolderNameController,
                       label: 'Nombre del Titular',
-                      isValid: true, // No validación específica aquí
+                      isValid: _isCardHolderNameValid,
+                      onChanged: (value) {
+                        setState(() {
+                          _isCardHolderNameValid = _validateCardHolderName(value);
+                        });
+                      },
                     ),
                     const SizedBox(height: 16),
                     Row(
@@ -138,6 +155,10 @@ class _PaymentMethodScreenState extends State<PaymentMethodScreen> {
                                 _isExpiryDateValid = _validateExpiryDate(value);
                               });
                             },
+                            inputFormatters: [
+                              FilteringTextInputFormatter.digitsOnly,
+                              _ExpiryDateFormatter(),
+                            ],
                           ),
                         ),
                         const SizedBox(width: 16),
@@ -158,10 +179,11 @@ class _PaymentMethodScreenState extends State<PaymentMethodScreen> {
                     const SizedBox(height: 24),
                     SizedBox(
                       width: 300,
-                      child: ElevatedButton(
+                      child: OutlinedButton(
                         onPressed: _savePaymentMethod,
-                        style: ElevatedButton.styleFrom(
+                        style: OutlinedButton.styleFrom(
                           backgroundColor: Colors.white,
+                          side: const BorderSide(color: Colors.grey, width: 1.5), // Borde gris
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(30),
                           ),
@@ -192,16 +214,18 @@ class _PaymentMethodScreenState extends State<PaymentMethodScreen> {
     required String label,
     required bool isValid,
     void Function(String)? onChanged,
+    List<TextInputFormatter>? inputFormatters, // Agregar este parámetro
   }) {
     return TextField(
       controller: controller,
       onChanged: onChanged,
       keyboardType: TextInputType.text,
+      inputFormatters: inputFormatters, // Aplicar el formateador aquí
       style: const TextStyle(fontSize: 18, color: Colors.black),
       decoration: InputDecoration(
         suffixIcon: Icon(
-          isValid ? Icons.check : Icons.close,
-          color: isValid ? Colors.green : Colors.red,
+          isValid ? Icons.check : Icons.card_giftcard,
+          color: isValid ? Colors.green : Colors.grey,
         ),
         labelText: label,
         labelStyle: const TextStyle(
@@ -220,6 +244,35 @@ class _PaymentMethodScreenState extends State<PaymentMethodScreen> {
           borderSide: const BorderSide(color: Color(0xFFAB47BC)),
         ),
       ),
+    );
+  }
+}
+
+// Formateador para la fecha de expiración
+class _ExpiryDateFormatter extends TextInputFormatter {
+  @override
+  TextEditingValue formatEditUpdate(TextEditingValue oldValue, TextEditingValue newValue) {
+    // Si el nuevo valor está vacío, no hacer nada
+    if (newValue.text.isEmpty) {
+      return newValue;
+    }
+
+    // Formatear la entrada
+    final StringBuffer newText = StringBuffer();
+    String text = newValue.text.replaceAll('/', '');
+
+    for (int i = 0; i < text.length; i++) {
+      // Agregar el carácter actual
+      newText.write(text[i]);
+      // Si hemos agregado dos caracteres, agregar un '/'
+      if (i == 1) {
+        newText.write('/');
+      }
+    }
+
+    return TextEditingValue(
+      text: newText.toString(),
+      selection: TextSelection.collapsed(offset: newText.toString().length),
     );
   }
 }

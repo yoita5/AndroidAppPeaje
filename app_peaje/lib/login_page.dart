@@ -139,8 +139,8 @@ class _LoginPageState extends State<LoginPage> {
                       },
                       decoration: InputDecoration(
                         suffixIcon: Icon(
-                          _isEmailValid ? Icons.check : Icons.close,
-                          color: _isEmailValid ? Colors.green : Colors.red,
+                          _isEmailValid ? Icons.check : Icons.person,
+                          color: _isEmailValid ? Colors.green : Colors.grey,
                         ),
                         label: const Text(
                           'Email',
