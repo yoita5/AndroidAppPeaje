@@ -1,7 +1,6 @@
 import 'package:app_peaje/login_page.dart';
 import 'package:app_peaje/registerScreen.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 
 class WelcomeScreen extends StatefulWidget {
   const WelcomeScreen({super.key});
@@ -14,15 +13,6 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
   // Variables para manejar el estado de los botones
   bool _isLoginButtonPressed = false;
   bool _isRegisterButtonPressed = false;
-  bool _isGoogleButtonPressed = false;
-
-  void _handleGoogleSignIn(BuildContext context) {
-    // Aquí puedes agregar la lógica para iniciar sesión con Google
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (context) => const LoginPage()), // Simula el inicio de sesión
-    );
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -91,23 +81,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
               },
             ),
             const Spacer(),
-            const Text(
-              'Iniciar sesión con cuenta Google',
-              style: TextStyle(
-                fontSize: 17,
-                color: Colors.white,
-              ),
-            ),
-            const SizedBox(height: 12),
-            _buildGoogleSignInButton(
-              onTap: () => _handleGoogleSignIn(context),
-              isPressed: _isGoogleButtonPressed,
-              onPressChange: (isPressed) {
-                setState(() {
-                  _isGoogleButtonPressed = isPressed;
-                });
-              },
-            ),
+            // Se ha eliminado la sección de inicio de sesión con Google
             const SizedBox(height: 50),
           ],
         ),
@@ -145,54 +119,6 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
               fontWeight: FontWeight.bold,
               color: isBorderButton ? Colors.white : Colors.black,
             ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildGoogleSignInButton({
-    required void Function() onTap,
-    required bool isPressed,
-    required void Function(bool) onPressChange,
-  }) {
-    return GestureDetector(
-      onTapDown: (_) => onPressChange(true),
-      onTapUp: (_) {
-        onPressChange(false);
-        onTap();
-      },
-      onTapCancel: () => onPressChange(false),
-      child: Container(
-        height: 53,
-        width: 320,
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(30),
-          color: Colors.white,
-          boxShadow: [
-            BoxShadow(
-              color: Colors.grey.withOpacity(0.5),
-              spreadRadius: 2,
-              blurRadius: 5,
-              offset: const Offset(0, 3),
-            ),
-          ],
-        ),
-        child: Center(
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              SvgPicture.asset('assets/google_logo.svg', width: 30, height: 30),
-              const SizedBox(width: 16),
-              const Text(
-                'CONTINUAR CON GOOGLE',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black,
-                ),
-              ),
-            ],
           ),
         ),
       ),

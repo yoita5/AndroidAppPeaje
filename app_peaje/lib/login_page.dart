@@ -115,7 +115,7 @@ class _LoginPageState extends State<LoginPage> {
               ),
             ),
           ),
-          Padding(
+          SingleChildScrollView( // Agregado para permitir el desplazamiento
             padding: const EdgeInsets.only(top: 200.0),
             child: Container(
               decoration: const BoxDecoration(
@@ -123,7 +123,7 @@ class _LoginPageState extends State<LoginPage> {
                     topLeft: Radius.circular(40), topRight: Radius.circular(40)),
                 color: Colors.white,
               ),
-              height: double.infinity,
+              height: MediaQuery.of(context).size.height, // Ajustado para ocupar toda la altura
               width: double.infinity,
               child: Padding(
                 padding: const EdgeInsets.only(left: 18.0, right: 18),
@@ -139,8 +139,8 @@ class _LoginPageState extends State<LoginPage> {
                       },
                       decoration: InputDecoration(
                         suffixIcon: Icon(
-                          _isEmailValid ? Icons.check : Icons.close,
-                          color: _isEmailValid ? Colors.green : Colors.red,
+                          _isEmailValid ? Icons.check : Icons.person,
+                          color: _isEmailValid ? Colors.green : Colors.grey,
                         ),
                         label: const Text(
                           'Email',
