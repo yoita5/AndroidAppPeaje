@@ -432,6 +432,11 @@ void _processScannedQrCode(String scannedData) {
     String username = parts[1];
     double chargeAmount = _minRechargeAmount; // Importe del cobro por peaje
 
+    // Ejemplo de uso de username en un mensaje
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Usuario: $username está realizando un cobro.')),
+    );
+
     if (widget.user.balance >= chargeAmount) {
       setState(() {
         widget.user.balance -= chargeAmount;

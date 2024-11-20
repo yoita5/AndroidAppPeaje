@@ -4,11 +4,6 @@ import 'package:flutter_barcode_scanner/flutter_barcode_scanner_platform_interfa
 import 'package:flutter_barcode_scanner/flutter_barcode_scanner_method_channel.dart';
 import 'package:plugin_platform_interface/plugin_platform_interface.dart';
 
-import 'package:flutter_test/flutter_test.dart';
-import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
-import 'package:flutter_barcode_scanner/flutter_barcode_scanner_platform_interface.dart';
-import 'package:mockito/mockito.dart';
-import 'package:integration_test/integration_test.dart';
 
 // Clase Mock para el plugin
 class MockFlutterBarcodeScannerPlatform

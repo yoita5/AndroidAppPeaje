@@ -4,7 +4,7 @@ import 'package:app_peaje/user.dart';
 class UserManagementScreen extends StatefulWidget {
   final User user;
 
-  const UserManagementScreen({Key? key, required this.user}) : super(key: key);
+  const UserManagementScreen({super.key, required this.user});
 
   @override
   State<UserManagementScreen> createState() => _UserManagementScreenState();

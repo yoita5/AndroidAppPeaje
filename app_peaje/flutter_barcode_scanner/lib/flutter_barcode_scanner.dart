@@ -5,7 +5,6 @@
 // platforms in the `pubspec.yaml` at
 // https://flutter.dev/to/pubspec-plugin-platforms.
 
-import 'flutter_barcode_scanner_platform_interface.dart';
 
 
 import 'dart:async';
